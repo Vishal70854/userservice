@@ -32,6 +32,7 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        <!-- dependency for our mysql database-->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -59,12 +60,14 @@
             <version>3.13.0</version>
         </dependency>
 
+        <!-- dependency for our spring security to provide authentication-->
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- dependency for our jwt web tokens-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>

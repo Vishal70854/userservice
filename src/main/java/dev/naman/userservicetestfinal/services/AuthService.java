@@ -1,11 +1,14 @@
 package dev.naman.userservicetestfinal.services;
 
 import dev.naman.userservicetestfinal.dtos.UserDto;
+import dev.naman.userservicetestfinal.models.Role;
 import dev.naman.userservicetestfinal.models.Session;
 import dev.naman.userservicetestfinal.models.SessionStatus;
 import dev.naman.userservicetestfinal.models.User;
 import dev.naman.userservicetestfinal.repositories.SessionRepository;
 import dev.naman.userservicetestfinal.repositories.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import lombok.Setter;
@@ -23,10 +26,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AuthService {
@@ -60,7 +60,8 @@ public class AuthService {
         MacAlgorithm alg = Jwts.SIG.HS256; //or HS384 or HS256
         SecretKey key = alg.key().build();
 
-//        "hello".getBytes()
+//        below message is not readable and not easy also thus trying some
+        // easy method to parse and store json object
 
 //        String message = "{\n" +
 //                "   \"email\": \"naman@scaler.com\",\n" +
@@ -77,19 +78,23 @@ public class AuthService {
 
 // Create the compact JWS:
         // below line is to create a json for our payload in jwt
+        // we can create our payload as per the user requirement.
         Map<String, Object>  jsonForJwt = new HashMap<>();
         jsonForJwt.put("email", user.getEmail());
         jsonForJwt.put("roles", user.getRoles());
         jsonForJwt.put("createdAt", new Date());
         jsonForJwt.put("expiryAt", new Date(LocalDate.now().plusDays(3).toEpochDay()));
 
-        // this will create the payload in our jwt using the above requirements like
-        // email, roles, createdAt, expiryAt
-        // thus providing a more readable way to create our json web token payload
+        // below statement is to encode a map to a json(jwt)
+        // this will create the payload in our jwt using the above map requirements like
+        // email, roles, createdAt, expiryAt etc
+        // thus providing a more readable(for us) way to create our json web token payload
         // we have also provided the key and algo by which we will key our jwt encrypted i.e HS256
-        token = Jwts.builder()
-                .claims(jsonForJwt)
-                .signWith(key, alg)
+        // claims is the date we are providing inside jwt(under the payload)
+
+        token = Jwts.builder()      // build our jwt
+                .claims(jsonForJwt) // providing map in our payload to create jwt
+                .signWith(key, alg) // sign the jwt with the key and algo
                 .compact();
 //
 //compact// Parse the compact JWS:
@@ -106,11 +111,12 @@ public class AuthService {
 //        Map<String, String> headers = new HashMap<>();
 //        headers.put(HttpHeaders.SET_COOKIE, token);
 
+        // we will add the authentication jwt token in our cookie header and we will return it via cookie header to validate the user as shown below.
         MultiValueMapAdapter<String, String> headers = new MultiValueMapAdapter<>(new HashMap<>());
         headers.add(HttpHeaders.SET_COOKIE, "auth-token:" + token);
 
 
-
+        // send a ResponseEntity of type UserDto as a response in the output
         ResponseEntity<UserDto> response = new ResponseEntity<>(userDto, headers, HttpStatus.OK);
 //        response.getHeaders().add(HttpHeaders.SET_COOKIE, token);
 
@@ -143,9 +149,11 @@ public class AuthService {
         return UserDto.from(savedUser);
     }
 
+    // to validate if the user is correct or not
     public SessionStatus validate(String token, Long userId) {
         Optional<Session> sessionOptional = sessionRepository.findByTokenAndUser_Id(token, userId);
 
+        // validate if we dont have the session object
         if (sessionOptional.isEmpty()) {
             return SessionStatus.ENDED;
 //            return null;
@@ -153,16 +161,36 @@ public class AuthService {
 
         Session session = sessionOptional.get();
 
+        // validate if the session is active or not
         if (!session.getSessionStatus().equals(SessionStatus.ACTIVE)) {
             return SessionStatus.ENDED;
         }
 
+        // the below statement is used to parse/decode our json object so that
+        // we will be able to use more parameters to validate if the user is valid or not
+        // for ex : using ip address, time based matching, rate limiting and many more checks to validate the user.
+        // claimsJws is the date inside jwt(specifically inside our payload) which we have given while login as claims
 
-        Jwts.parser()
-                .build();
+        Jws<Claims> claimsJws = Jwts.parser() // used for parsing our jwt token
+                .build()
+                .parseSignedClaims(token);  // parse the token
 
+        // we are reading the data from jwt(the map which we created while login)
+        // we are decoding our jwt and reading the data using claimsJwt
+        String email = (String) claimsJws.getPayload().get("email");
+        List<Role> roles = (List<Role>) claimsJws.getPayload().get("roles");
+        Date createdAt = (Date) claimsJws.getPayload().get("createdAt");
+        Date expiryAt = (Date) claimsJws.getPayload().get("expiryAt");
 
-//        if (!session.)
+        // now we can have more level of validation checks based upon our requirement
+        // since we have decoded the jwt and got our values(i.e email, roles, expiryAt, createdAt) this is based on our requirement
+        // it can be more as well
+        // the more checks we will provide in the validate method, the more secure our system will be for authentication.
+
+        // check if session createdAt is before the todays date then return SessionStatus.ENDED.
+        if (createdAt.before(new Date())){
+            return SessionStatus.ENDED;
+        }
 
         return SessionStatus.ACTIVE;
     }
