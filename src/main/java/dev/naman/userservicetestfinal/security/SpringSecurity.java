@@ -20,16 +20,19 @@ public class SpringSecurity {
     // thus in the below method we are premitting all api endpoints as of now
     // if we want to authenticate any endpoint as per our requirement then we have to
     // use the below commented code
-    @Bean // it tells spring that an object of the below method will be created at the time when spring boot application starts
-    @Order(1)
-    public SecurityFilterChain filteringCriteria(HttpSecurity http) throws Exception {
-        http.cors().disable();
-        http.csrf().disable();
-        http.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
+
+    // since we have a SecurityFilterChain object in SecurityConfig class thus commenting this sfc bean
+//    @Bean // it tells spring that an object of the below method will be created at the time when spring boot application starts
+//    @Order(1)
+//    public SecurityFilterChain filteringCriteria(HttpSecurity http) throws Exception {
+//        http.cors().disable();
+//        http.csrf().disable();
 //        http.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
-//        http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/auth/*").authenticated());
-        return http.build();
-    }
+////        http.authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
+////        http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/auth/*").authenticated());
+//        return http.build();
+//    }
+
     // Object that handles what all api endpoints should be authenticated
     // v/s what all shouldn't be authenticated
 

@@ -10,3 +10,7 @@
 
 # Cookieless servers article
 *https://blog.relevant-digital.com/google-gave-more-time-to-prepare-for-a-cookieless-future-what-does-that-mean-for-publishers
+
+## Spring Security OAuth2 documentation
+* https://docs.spring.io/spring-authorization-server/docs/current/reference/html/getting-started.html
+

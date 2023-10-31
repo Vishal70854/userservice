@@ -20,11 +20,14 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto request) {
-        return authService.login(request.getEmail(), request.getPassword());
-//        return null;
-    }
+    // since spring security oauth2 by default provides login page which fetches data from db to login.
+    // thus we are commenting the code for login mentioned below. for rest we need apis
+
+//    @PostMapping("/login")
+//    public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto request) {
+//        return authService.login(request.getEmail(), request.getPassword());
+////        return null;
+//    }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestBody LogoutRequestDto request) {
